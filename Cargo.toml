@@ -1,0 +1,53 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/cctp-forwarder",
+    "contracts/message-transmitter-v2",
+    "contracts/token-messenger-minter-v2",
+    "packages/cctp-interfaces",
+    "packages/cctp-roles",
+    "packages/cctp-utils",
+    "packages/test-contracts/*",
+]
+# Only real contracts and library packages are default members.
+# Test contracts are built separately via `cargo build-contracts`
+# and `cargo build-test-contracts` (see .cargo/config.toml).
+default-members = [
+    "contracts/cctp-forwarder",
+    "contracts/message-transmitter-v2",
+    "contracts/token-messenger-minter-v2",
+    "packages/cctp-interfaces",
+    "packages/cctp-roles",
+    "packages/cctp-utils",
+]
+
+[workspace.dependencies]
+cctp-interfaces = { path = "packages/cctp-interfaces" }
+cctp-roles = { path = "packages/cctp-roles" }
+cctp-utils = { path = "packages/cctp-utils" }
+common-roles = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+event-assertion = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+mock-minter = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+mock-swap-minter = { path = "packages/test-contracts/mock-swap-minter" }
+rstest = "0.25"
+simple-role = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+simple-role-macros = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+soroban-sdk = "23.5.2"
+stablecoin-interfaces = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+stablecoin-roles = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+stellar-utils = { git = "https://github.com/circlefin/stablecoin-xlm.git", rev = "7f33848b3d76df2aeff92a049a50d99c263e403d" }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
+
+# For more information about this profile see https://soroban.stellar.org/docs/basic-tutorials/logging#cargotoml-profile
+[profile.release-with-logs]
+inherits = "release"
+debug-assertions = true

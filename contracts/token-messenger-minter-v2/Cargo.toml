@@ -1,0 +1,35 @@
+[package]
+name = "token-messenger-minter-v2"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["lib", "cdylib"]
+doctest = false
+
+[features]
+default = ["entry-points"]
+entry-points = []
+
+[dependencies]
+cctp-interfaces = { workspace = true }
+cctp-roles = { workspace = true }
+cctp-utils = { workspace = true }
+common-roles = { workspace = true }
+soroban-sdk = { workspace = true }
+stablecoin-interfaces = { workspace = true }
+stellar-contract-utils = "=0.5.0"
+stellar-macros = "=0.5.0"
+stellar-utils = { workspace = true, features = ["hazmat-address-utils"] }
+
+[dev-dependencies]
+cctp-roles = { workspace = true, features = ["testutils"] }
+common-roles = { workspace = true, features = ["testutils"] }
+event-assertion = { workspace = true }
+failing-mock-message-transmitter = { path = "../../packages/test-contracts/failing-mock-message-transmitter" }
+mock-message-transmitter = { path = "../../packages/test-contracts/mock-message-transmitter" }
+mock-swap-minter = { workspace = true }
+rstest = { workspace = true }
+soroban-sdk = { workspace = true, features = ["testutils"] }
+

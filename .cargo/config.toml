@@ -1,0 +1,4 @@
+[alias]
+build-contracts = "build --release --target wasm32v1-none -p message-transmitter-v2 -p token-messenger-minter-v2 -p cctp-forwarder"
+cov = "llvm-cov --all-features --workspace --ignore-filename-regex (test.*\\.rs$|.*stablecoin-xlm/.*)"
+cov-html = "llvm-cov --all-features --workspace --html --ignore-filename-regex (test.*\\.rs$|.*stablecoin-xlm/.*)"

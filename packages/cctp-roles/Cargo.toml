@@ -1,0 +1,28 @@
+[package]
+name = "cctp-roles"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils", "dep:event-assertion"]
+
+[dependencies]
+cctp-utils = { workspace = true }
+common-roles = { workspace = true }
+event-assertion = { workspace = true, optional = true }
+simple-role = { workspace = true }
+simple-role-macros = { workspace = true }
+soroban-sdk = { workspace = true, features = ["hazmat-crypto"] }
+stellar-access = "=0.5.0"
+stellar-macros = "=0.5.0"
+stellar-utils = { workspace = true }
+
+[dev-dependencies]
+common-roles = { workspace = true, features = ["testutils"] }
+event-assertion = { workspace = true }
+proptest = "=1.11.0"
+soroban-sdk = { workspace = true, features = ["testutils", "hazmat-crypto"] }

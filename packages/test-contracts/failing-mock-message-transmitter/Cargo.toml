@@ -1,0 +1,13 @@
+[package]
+name = "failing-mock-message-transmitter"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[dependencies]
+cctp-interfaces = { workspace = true }
+soroban-sdk = { workspace = true }

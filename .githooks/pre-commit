@@ -1,0 +1,43 @@
+#!/bin/sh
+# Pre-commit hook for Stellar CCTP contracts
+# This hook runs format and lint checks before allowing commits
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if rustfmt is available, install if missing
+if ! cargo fmt --version >/dev/null 2>&1; then
+    echo "📦 rustfmt not found, installing..."
+    if ! rustup component add rustfmt; then
+        echo "❌ Failed to install rustfmt"
+        exit 1
+    fi
+    echo "✅ rustfmt installed successfully"
+fi
+
+# Check if clippy is available, install if missing
+if ! cargo clippy --version >/dev/null 2>&1; then
+    echo "📦 clippy not found, installing..."
+    if ! rustup component add clippy; then
+        echo "❌ Failed to install clippy"
+        exit 1
+    fi
+    echo "✅ clippy installed successfully"
+fi
+
+echo "📝 Running cargo fmt..."
+if ! cargo fmt -- --check; then
+    echo "❌ Code formatting check failed!"
+    echo "   Run 'cargo fmt' to fix formatting issues."
+    exit 1
+fi
+
+echo "🔎 Running cargo clippy..."
+if ! cargo clippy --all-targets --all-features -- --deny warnings; then
+    echo "❌ Clippy found issues!"
+    echo "   Fix the issues or run 'cargo clippy --fix' to auto-fix some of them."
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"

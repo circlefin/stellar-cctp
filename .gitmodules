@@ -1,0 +1,3 @@
+[submodule "scripts/stablecoin-xlm"]
+	path = scripts/stablecoin-xlm
+	url = https://github.com/circlefin/stablecoin-xlm.git
