@@ -1,0 +1,21 @@
+[package]
+name = "cctp-utils"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+doctest = false
+
+[features]
+default = []
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+proptest = "=1.11.0"
+rstest = { workspace = true }
+soroban-sdk = { workspace = true, features = ["testutils"] }
+

@@ -1,0 +1,52 @@
+# Packages with compound licenses that are individually permissive
+# These use "X AND Y" license expressions where both X and Y are permissive licenses
+
+# ISC AND MIT
+pkg:npm/@bcoe/v8-coverage
+pkg:npm/@npmcli/redact
+pkg:npm/abbrev
+
+# Apache-2.0 AND MIT
+pkg:npm/@pkgjs/parseargs
+pkg:npm/unrs-resolver
+
+# BSD-3-Clause AND ISC
+pkg:npm/bcrypt-pbkdf
+
+# LicenseRef-scancode-unknown-license-reference AND MIT
+pkg:npm/bignumber.js
+
+# BSD-2-Clause AND BSD-3-Clause
+pkg:npm/esprima
+
+# CC0-1.0 AND MIT
+pkg:npm/lodash
+pkg:npm/lodash.camelcase
+pkg:npm/type-fest
+
+# LicenseRef-scancode-dco-1.1 AND MIT
+pkg:npm/nan
+
+# BSD-3-Clause AND LicenseRef-scancode-protobuf
+pkg:npm/protobufjs
+
+# BSD-3-Clause AND MIT
+pkg:npm/sha.js
+
+# BSD-2-Clause AND BSD-3-Clause
+pkg:npm/uglify-js
+
+# (MIT OR Apache-2.0) AND Unicode-3.0
+pkg:cargo/unicode-ident
+
+# Cargo packages with incompatible or unresolvable license identifiers
+# soroban-wasmi: actual license is MIT OR Apache-2.0, but Cargo.toml uses legacy "MIT/Apache-2.0" syntax
+pkg:cargo/soroban-wasmi@0.31.1-soroban.20.0.1
+# wasmparser/wasmparser-nostd: Apache-2.0 WITH LLVM-exception (more permissive than Apache-2.0, not in allowlist)
+pkg:cargo/wasmparser@0.116.1
+pkg:cargo/wasmparser-nostd@0.100.2
+
+# Packages where the license scanner cannot detect the license from the
+# yarn 4 lockfile format. All verified as MIT on npmjs.com.
+pkg:npm/aes-js
+pkg:npm/gensync

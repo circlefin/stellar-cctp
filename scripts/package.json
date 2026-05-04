@@ -1,0 +1,46 @@
+{
+  "name": "stellar-cctp-scripts",
+  "version": "1.0.0",
+  "description": "Scripts and E2E tests for Stellar CCTP contracts",
+  "private": true,
+  "workspaces": [
+    "stablecoin-xlm/soroban/scripts"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "build:contracts": "npm run build:cctp-contracts && npm run build:stablecoin-contracts",
+    "build:cctp-contracts": "cd .. && cargo build-contracts",
+    "build:stablecoin-contracts": "cd stablecoin-xlm/soroban && cargo build --release --target wasm32v1-none -p fiat-token-admin && cp target/wasm32v1-none/release/fiat_token_admin.wasm ../../../target/wasm32v1-none/release/",
+    "generate:bindings": "npm run generate:bindings:message-transmitter-v2 && npm run generate:bindings:token-messenger-minter-v2 && npm run generate:bindings:cctp-forwarder",
+    "generate:bindings:message-transmitter-v2": "stellar contract bindings typescript --wasm ../target/wasm32v1-none/release/message_transmitter_v2.wasm --output-dir clients/message-transmitter-v2 --overwrite",
+    "generate:bindings:token-messenger-minter-v2": "stellar contract bindings typescript --wasm ../target/wasm32v1-none/release/token_messenger_minter_v2.wasm --output-dir clients/token-messenger-minter-v2 --overwrite",
+    "generate:bindings:cctp-forwarder": "stellar contract bindings typescript --wasm ../target/wasm32v1-none/release/cctp_forwarder.wasm --output-dir clients/cctp-forwarder --overwrite",
+    "setup:local-env": "npx tsx cli/setup/local-env.ts",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.9",
+    "@faker-js/faker": "9.9.0",
+    "@types/node": "24.12.0",
+    "tsx": "4.21.0",
+    "typescript": "5.4.5"
+  },
+  "dependencies": {
+    "@circlefin/stellar-stablecoin-scripts": "workspace:*",
+    "@stellar/stellar-sdk": "14.6.1",
+    "ethers": "6.13.0",
+    "neverthrow": "8.2.0",
+    "testcontainers": "11.13.0"
+  },
+  "resolutions": {
+    "caniuse-lite": "1.0.30001764",
+    "electron-to-chromium": "1.5.267",
+    "get-tsconfig": "4.13.0",
+    "commander": "12.1.0",
+    "undici": "7.24.6",
+    "docker-compose": "1.3.3"
+  },
+  "packageManager": "yarn@4.9.1"
+}

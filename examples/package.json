@@ -1,0 +1,27 @@
+{
+  "name": "stellar-cctp-examples",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Examples demonstrating cross-chain USDC transfers between EVM and Stellar using CCTP.",
+  "type": "module",
+  "scripts": {
+    "bridge": "tsx main.ts",
+    "lint": "biome check .",
+    "lint:fix": "biome check --fix .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "14.6.1",
+    "dotenv": "16.4.7",
+    "env-var": "7.5.0",
+    "tsx": "4.21.0",
+    "viem": "2.23.2",
+    "zx": "8.7.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.9",
+    "@types/node": "24.12.0",
+    "typescript": "6.0.2"
+  }
+}

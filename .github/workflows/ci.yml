@@ -1,0 +1,114 @@
+# Copyright 2026 Circle Internet Group, Inc. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: CI
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  rust_build:
+    name: Rust Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: ./scripts/setup-rust.sh
+
+      - name: Run format check
+        run: cargo fmt -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- --deny warnings
+
+      - name: Build contracts
+        run: cargo build-contracts
+
+      - name: Cache build artifacts
+        uses: actions/cache/save@v4
+        with:
+          path: target
+          key: rust-build-${{ github.sha }}
+
+  rust_tests:
+    name: Rust Tests
+    needs: rust_build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: ./scripts/setup-rust.sh
+
+      - name: Restore build cache
+        uses: actions/cache/restore@v4
+        with:
+          path: target
+          key: rust-build-${{ github.sha }}
+          fail-on-cache-miss: true
+
+      - name: Run tests
+        run: cargo test
+
+  npm_lint:
+    name: NPM Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run lint
+        run: yarn lint
+
+  scan:
+    needs: [rust_tests, npm_lint]
+    if: github.event_name == 'pull_request'
+    uses: circlefin/circle-public-github-workflows/.github/workflows/pr-scan.yaml@v1
+    with:
+      allow-reciprocal-licenses: false
+
+  release-sbom:
+    needs: [rust_tests, npm_lint]
+    if: github.event_name == 'push'
+    uses: circlefin/circle-public-github-workflows/.github/workflows/attach-release-assets.yaml@v1
