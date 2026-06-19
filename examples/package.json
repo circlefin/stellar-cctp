@@ -16,7 +16,7 @@
     "dotenv": "16.4.7",
     "env-var": "7.5.0",
     "tsx": "4.21.0",
-    "viem": "2.23.2",
+    "viem": "2.51.3",
     "zx": "8.7.1"
   },
   "devDependencies": {
