@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 use crate::contract::MessageTransmitterV2ContractInitParams;
+use crate::storage;
 use crate::test_utils::{
     create_test_message, fixture_invalid_destination_caller_message,
     fixture_invalid_destination_domain_message, fixture_invalid_version_message,
@@ -961,6 +962,44 @@ fn test_receive_message_fails_with_nonce_already_used() {
     client.receive_message(&caller, &fixture.message, &fixture.attestation);
 
     // Second receive with same nonce should fail
+    mock_receive_message_auth(
+        &ctx.env,
+        &ctx.contract_id,
+        &caller,
+        fixture.message.clone(),
+        fixture.attestation.clone(),
+    );
+    client.receive_message(&caller, &fixture.message, &fixture.attestation);
+}
+
+#[test]
+fn test_nonce_expiry_allows_message_replay() {
+    let ctx = setup_contract();
+    let client = ctx.client();
+    let caller = Address::generate(&ctx.env);
+
+    let _mock_handler_address = ctx.env.register(MockMessageHandler, ());
+    let fixture = fixture_valid_message(&ctx.env);
+
+    mock_receive_message_auth(
+        &ctx.env,
+        &ctx.contract_id,
+        &caller,
+        fixture.message.clone(),
+        fixture.attestation.clone(),
+    );
+    client.receive_message(&caller, &fixture.message, &fixture.attestation);
+
+    let nonce = MessageV2::get_nonce(&fixture.message).unwrap();
+    assert!(client.is_nonce_used(&nonce));
+
+    let nonce_key = storage::MessageTransmitterStorageKey::UsedNonce(nonce.clone());
+    ctx.env.as_contract(&ctx.contract_id, || {
+        ctx.env.storage().persistent().remove(&nonce_key);
+    });
+
+    assert!(!client.is_nonce_used(&nonce));
+
     mock_receive_message_auth(
         &ctx.env,
         &ctx.contract_id,
