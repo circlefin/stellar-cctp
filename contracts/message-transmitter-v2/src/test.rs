@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 use crate::contract::MessageTransmitterV2ContractInitParams;
+use crate::storage;
 use crate::test_utils::{
     create_test_message, fixture_invalid_destination_caller_message,
     fixture_invalid_destination_domain_message, fixture_invalid_version_message,
