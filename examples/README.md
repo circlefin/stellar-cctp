@@ -103,6 +103,19 @@ npm run bridge evm2stellar -- --amount 1000000 --recipient G...
 
 > **Note:** Amounts are in EVM USDC subunits (6 decimals). `1000000` = 1 USDC.
 
+### Additional Options
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--timeout` | `600` | Maximum seconds to wait for attestation before timing out |
+| `--dryRun` | `false` | If `true`, submits the burn transaction but skips attestation polling and the receive/mint step |
+
+**Example with timeout and dry-run:**
+
+```bash
+npm run bridge stellar2evm -- --amount 10000000 --timeout 300 --dryRun true
+```
+
 ---
 
 ## File Overview

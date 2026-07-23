@@ -44,6 +44,10 @@ interface ParsedArgs {
   fastBurn: boolean;
   /** Stellar strkey of the final recipient (for evm2stellar) */
   recipient: string;
+  /** Maximum seconds to wait for attestation (default: 600) */
+  timeout: number;
+  /** If true, validate inputs without executing transactions */
+  dryRun: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -87,11 +91,27 @@ const getMaxFee = (amount: bigint, minimumFeeBps: number): bigint => {
 // Attestation
 // ---------------------------------------------------------------------------
 
-const fetchAttestation = async (txHash: string, domainId: number): Promise<AttestationMessage> => {
-  console.log("Fetching attestation...");
+const fetchAttestation = async (
+  txHash: string,
+  domainId: number,
+  timeoutSeconds: number = 600,
+): Promise<AttestationMessage> => {
+  console.log(`Fetching attestation (timeout: ${timeoutSeconds}s)...`);
   const url = `${IRIS_API_URL}/v2/messages/${domainId}?transactionHash=${txHash}`;
+  const startTime = Date.now();
+  const maxDurationMs = timeoutSeconds * 1000;
+  let attempts = 0;
 
   while (true) {
+    attempts++;
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= maxDurationMs) {
+      throw new Error(
+        `Attestation timeout: no attestation received after ${timeoutSeconds}s (${attempts} attempts). ` +
+          `The attestation may still be pending — try again later with a longer --timeout.`,
+      );
+    }
+
     try {
       const response = await fetch(url);
 
@@ -109,12 +129,13 @@ const fetchAttestation = async (txHash: string, domainId: number): Promise<Attes
       const data = (await response.json()) as AttestationResponse;
 
       if (data.error || !data.messages || data.messages[0]?.status !== "complete") {
-        console.log("Waiting for attestation...");
+        const remainingSec = Math.round((maxDurationMs - elapsed) / 1000);
+        console.log(`Waiting for attestation... (attempt ${attempts}, ${remainingSec}s remaining)`);
         await new Promise((r) => setTimeout(r, 5000));
         continue;
       }
 
-      console.log("Attestation retrieved successfully!");
+      console.log(`Attestation retrieved successfully after ${attempts} attempt(s)!`);
       return data.messages[0];
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
@@ -151,7 +172,7 @@ const main = async (): Promise<void> => {
   const commandName = process.argv.slice(2)[0] as CommandName;
 
   const rawArgs = minimist(process.argv.slice(3), {
-    string: ["amount", "fastBurn", "recipient"],
+    string: ["amount", "fastBurn", "recipient", "timeout", "dryRun"],
   });
 
   const amountStr = rawArgs.amount;
@@ -160,10 +181,24 @@ const main = async (): Promise<void> => {
     process.exit(1);
   }
 
+  const amount = BigInt(amountStr);
+  if (amount === 0n) {
+    console.error("--amount must be greater than zero (contract will reject zero amounts)");
+    process.exit(1);
+  }
+
+  const timeoutSeconds = rawArgs.timeout ? Number.parseInt(rawArgs.timeout, 10) : 600;
+  if (Number.isNaN(timeoutSeconds) || timeoutSeconds <= 0) {
+    console.error("--timeout must be a positive integer (seconds)");
+    process.exit(1);
+  }
+
   const args: ParsedArgs = {
-    amount: BigInt(amountStr),
+    amount,
     fastBurn: rawArgs.fastBurn === "true",
     recipient: rawArgs.recipient ?? "",
+    timeout: timeoutSeconds,
+    dryRun: rawArgs.dryRun === "true",
   };
 
   if (!Object.values(CommandName).includes(commandName)) {
@@ -173,7 +208,7 @@ const main = async (): Promise<void> => {
 
   console.log(`Direction: ${commandName}`);
   console.log(
-    `Args: amount=${args.amount.toString()}, fastBurn=${args.fastBurn}, recipient=${args.recipient || "(default)"}`,
+    `Args: amount=${args.amount.toString()}, fastBurn=${args.fastBurn}, recipient=${args.recipient || "(default)"}, timeout=${args.timeout}s, dryRun=${args.dryRun}`,
   );
 
   if (commandName === CommandName.StellarToEvm) {
@@ -189,7 +224,12 @@ const main = async (): Promise<void> => {
     const depositTxHash = await depositForBurn(args.amount, maxFee, minFinalityThreshold);
     console.log(`DepositForBurn Tx: ${depositTxHash}`);
 
-    const attestation = await fetchAttestation(depositTxHash, STELLAR_DOMAIN_ID);
+    if (args.dryRun) {
+      console.log("[dry-run] Skipping attestation fetch and receive_message — burn tx submitted.");
+      return;
+    }
+
+    const attestation = await fetchAttestation(depositTxHash, STELLAR_DOMAIN_ID, args.timeout);
 
     const receiveTxHash = await receiveMessageEvm(attestation.message as Hex, attestation.attestation as Hex);
     console.log(`ReceiveMessage Tx: ${receiveTxHash}`);
@@ -242,7 +282,12 @@ const main = async (): Promise<void> => {
     );
     console.log(`DepositForBurnWithHook Tx: ${depositTxHash}`);
 
-    const attestation = await fetchAttestation(depositTxHash, EVM_DOMAIN);
+    if (args.dryRun) {
+      console.log("[dry-run] Skipping attestation fetch and mint_and_forward — burn tx submitted.");
+      return;
+    }
+
+    const attestation = await fetchAttestation(depositTxHash, EVM_DOMAIN, args.timeout);
 
     const receiveTxHash = await mintAndForward(
       STELLAR_CCTP_FORWARDER_ADDRESS,
