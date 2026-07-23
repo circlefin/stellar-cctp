@@ -114,11 +114,10 @@ cargo cov-html
 ```
 stellar-cctp/
 ├── contracts/
-│   ├── message-transmitter/        # Message transmission and attestation (v1)
-│   ├── message-transmitter-v2/     # Message transmission and attestation (v2)
-│   ├── token-messenger-minter/     # Token burning and minting (v1)
-│   ├── token-messenger-minter-v2/  # Token burning and minting (v2)
+│   ├── message-transmitter-v2/     # Message transmission and attestation
+│   ├── token-messenger-minter-v2/  # Token burning and minting
 │   └── cctp-forwarder/             # Hook-based message forwarding
+├── examples/                       # Standalone Stellar↔EVM transfer scripts
 ├── packages/
 │   ├── cctp-interfaces/            # Contract interfaces (MessageHandler, Receiver, Relayer)
 │   ├── cctp-roles/                 # CCTP-specific roles (Attestable, TokenController, etc.)
@@ -135,6 +134,10 @@ stellar-cctp/
                 ├── stablecoin-roles/   # Stablecoin-specific roles
                 └── ...                 # Other shared packages
 ```
+
+## Examples
+
+See the [examples directory](examples/README.md) for standalone TypeScript scripts demonstrating Stellar↔EVM USDC transfers using CCTP, including both `depositForBurn` (Stellar→EVM) and `mintAndForward` (EVM→Stellar via CCTP Forwarder) flows.
 
 ## Submodules
 
